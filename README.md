@@ -115,3 +115,19 @@ npm run flywheel  # --watch 快速迭代
 ## 授权
 
 MIT
+\n## 与 DSH 0.2.x 原生 Remote 的兼容（ 分支）\n\n上游 0.2.19 的 wire 契约属于 apiproxy 时代：对 DSH 0.2.0+ 的  会先 401（缺 browser-auth）、再全端点 404（端点改名）。本分支补齐了三层：\n\n- **认证**： 可带 （ 启动时打印的那个 URL），或单独设 ；客户端自动  换  cookie，401 时自动重连一次。\n- **端点**：点号 → 斜杠（ → ）、 → 、 → （ 取 ）。\n- **流**：(SSE) → (WebSocket) + 。注意 follow 同时是**会话激活开关**：不订阅时 prompt 只进 inbox、不产生事件，所以  模式也会在回合期间后台订阅。\n\n\n\n细节与端点表见 [docs/remote-protocol.md](docs/remote-protocol.md)。已知未覆盖：approval/question 交互帧（M2）。\n
+## 与 DSH 0.2.x 原生 Remote 的兼容（feat/remote-protocol 分支）
+
+上游 0.2.19 的 wire 契约属于 apiproxy 时代：对 DSH 0.2.0+ 的 `dsh web` 会先 401（缺 browser-auth）、再全端点 404（端点改名）。本分支补齐了三层：
+
+- **认证**：`DSH_URL` 可带 `?token=…`（`dsh web` 启动时打印的那个 URL），或单独设 `DSH_TOKEN`；客户端自动 `GET /connect` 换 `dsh-auth-*` cookie，401 时自动重连一次。
+- **端点**：点号 → 斜杠（`session.list` → `session/list`）、`payload` → `payload.args`、`session.history` → `session/page`（`throughSeq` 取 `session/projections.asOfSeq`）。
+- **流**：`/api/events.mux`(SSE) → `/api/remote.mux`(WebSocket) + `session/follow`。注意 follow 同时是**会话激活开关**：不订阅时 prompt 只进 inbox、不产生事件，所以 `run` 模式也会在回合期间后台订阅。
+
+```bash
+DSH_URL='http://127.0.0.1:3090/?token=…' dsh-tui        # 交互 TUI
+DSH_URL='http://127.0.0.1:3090/?token=…' dsh-tui run "你好"
+```
+
+细节与端点表见 [docs/remote-protocol.md](docs/remote-protocol.md)。已知未覆盖：approval/question 交互帧（M2）。
+

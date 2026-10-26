@@ -30,7 +30,7 @@ function usage() {
 
 async function listSessions() {
 	const { items } = await client.request("session.list");
-	console.log(`Connected to ${baseUrl} — ${items.length} session(s):`);
+	console.log(`Connected to ${client.baseUrl} — ${items.length} session(s):`);
 	for (const item of items) {
 		const state = item.blank ? "blank" : "used ";
 		const running = item.running ? " (running)" : "";
@@ -95,7 +95,7 @@ async function main() {
 				"  :w 提交   :cancel 停止回合   :q 退出",
 				"  /new /resume /help /status 或 host 命令（如 /git status）",
 				"",
-				"环境变量: DSH_URL   host 地址，默认 " + baseUrl
+				"环境变量: DSH_URL   host 地址（可带 ?token=…），默认 " + client.baseUrl
 			].join("\n")
 		);
 		return;

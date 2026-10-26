@@ -229,3 +229,26 @@ test("converse 不会把旧轮的 turn/end 当成当前轮的（新 user 事件�
 		return true;
 	});
 });
+
+test("Session.create：host 不认识默认 preset 时退回 host 默认，不阻断建会话", async () => {
+	const calls = [];
+	const host = {
+		async request(method, payload) {
+			calls.push({ method, payload });
+			if (method === "session.create" && payload.agentPreset) {
+				const error = new Error("agent-preset/not-found: unknown preset code");
+				error.code = "agent-preset/not-found";
+				throw error;
+			}
+			return { sessionId: "session-fallback", agentPreset: "standard" };
+		}
+	};
+
+	const session = await Session.create(host, { cwd: "/w" });
+	assert.equal(session.sessionId, "session-fallback");
+	assert.equal(session.agentPreset, "standard");
+	assert.equal(calls.length, 2);
+	assert.equal(calls[1].payload.agentPreset, undefined);
+	assert.equal(calls[1].payload.cwd, "/w");
+});
+
